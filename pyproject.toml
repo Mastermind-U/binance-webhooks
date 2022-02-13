@@ -11,6 +11,7 @@ python-binance = "^1.0.15"
 fastapi = "^0.73.0"
 uvicorn = "^0.17.4"
 hvac = "^0.11.2"
+loguru = "^0.6.0"
 
 [tool.poetry.dev-dependencies]
 mypy = "^0.931"
