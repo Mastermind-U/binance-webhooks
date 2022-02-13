@@ -1,0 +1,66 @@
+version: "3.7"
+
+
+services:
+  traefik:
+    image: "traefik:latest"
+    container_name: traefik
+    command:
+      - --api
+      # - --metrics
+      # - --metrics.prometheus.buckets=0.1,0.3,1.2,5.0
+      - --log.level=INFO
+      - --providers.docker=true
+      - --providers.docker.exposedbydefault=false
+      - --accesslog=true
+      - --accesslog.filepath=/var/log/traefik/access.log
+      - --entrypoints.web.address=:80
+      - --entrypoints.websecure.address=:443
+      - --entrypoints.web.http.redirections.entryPoint.to=websecure
+      - --entrypoints.web.http.redirections.entryPoint.scheme=https
+      - --entrypoints.web.http.redirections.entrypoint.permanent=true
+      - --certificatesresolvers.analytics-resolver.acme.tlschallenge=true
+      - --certificatesresolvers.analytics-resolver.acme.email=example@example.com
+      - --certificatesresolvers.analytics-resolver.acme.storage=/letsencrypt/acme.json
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - "/var/run/docker.sock:/var/run/docker.sock:ro"
+      - ./logs/traefik/:/var/log/traefik
+      - ./certs:/letsencrypt
+    labels:
+      - "traefik.enable=true"
+
+  server:
+    build:
+      context: .
+      dockerfile: ./app/Dockerfile
+    restart: unless-stopped
+    container_name: app
+    env_file:
+      - .env
+    command: "uvicorn main:app --host 0.0.0.0 --port 8000 --log-level=info"
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.services.server.loadbalancer.server.port=8000"
+      - "traefik.http.routers.server.rule=Host(`example.com`)"
+      - "traefik.http.routers.server.entrypoints=websecure"
+      - "traefik.http.routers.server.tls.certresolver=analytics-resolver"
+
+  vault:
+    image: vault:latest
+    container_name: vault
+    volumes:
+      - ./vault/config:/vault/config
+      - ./vault/policies:/vault/policies
+      - ./vault/data:/vault/data
+    ports:
+      - 8200:8200
+    environment:
+      - VAULT_ADDR=http://0.0.0.0:8200
+      - VAULT_API_ADDR=http://0.0.0.0:8200
+      - VAULT_ADDRESS=http://0.0.0.0:8200
+    cap_add:
+      - IPC_LOCK
+    command: vault server -config=/vault/config/vault.json
