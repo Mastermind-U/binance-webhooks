@@ -2,3 +2,4 @@
 token.txt
 *.log
 .env
+certs
