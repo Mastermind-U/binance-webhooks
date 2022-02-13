@@ -41,9 +41,12 @@ services:
     env_file:
       - .env
     command: "uvicorn main:app --host 0.0.0.0 --port 8000 --log-level=info"
+    volumes:
+      - ./logs/:/app/logs
+      - ./.keys/:/app/keys.json
     labels:
       - "traefik.enable=true"
-      - "traefik.http.services.server.loadbalancer.server.port=8000"
+      - "traefik.http.services.server.loadbalancer.server.port=8200"
       - "traefik.http.routers.server.rule=Host(`api.hazeprice.com`)"
       - "traefik.http.routers.server.entrypoints=websecure"
       - "traefik.http.routers.server.tls.certresolver=analytics-resolver"
