@@ -1,55 +1,27 @@
 """Main app file."""
 
-from binance import enums, exceptions
+from binance import enums
 from binance.client import AsyncClient
-from config import Settings, get_settings
-from fastapi import Depends, FastAPI, HTTPException, Request, status
+from config import Settings, get_binance_client, get_settings
+from exception_handlers import BINANCE_EXCEPTIONS, binance_exception_handler
+from fastapi import Depends, FastAPI, HTTPException, status
 from models import WebhookData
 
-app = FastAPI(
-    name="Binance-resolver",
-    debug=get_settings().DEBUG,
-)
 
-
-binance_exceptions = (
-    exceptions.BinanceAPIException,
-    exceptions.BinanceRequestException,
-    exceptions.BinanceOrderException,
-    exceptions.BinanceOrderMinAmountException,
-    exceptions.BinanceOrderMinPriceException,
-    exceptions.BinanceOrderMinTotalException,
-    exceptions.BinanceOrderUnknownSymbolException,
-    exceptions.BinanceOrderInactiveSymbolException,
-    exceptions.BinanceWebsocketUnableToConnect,
-    exceptions.NotImplementedException,
-)
-
-
-async def binance_exception_handler(
-    request: Request,
-    exc: exceptions.BinanceAPIException,
-):
-    """Handle any binance exception."""
-    raise HTTPException(
-        status.HTTP_500_INTERNAL_SERVER_ERROR, str(exc)
-    ) from exc
-
-
-for exc in binance_exceptions:
-    app.exception_handler(exc)
-
-
-async def get_binance_client(settings: Settings = Depends(get_settings)):
-    """Get binance client via dependency."""
-    client = AsyncClient.create(
-        api_key=settings.API_KEY,
-        api_secret=settings.SECRET_KEY,
+def set_app():
+    """Create app."""
+    app = FastAPI(
+        name="Binance-resolver",
+        debug=get_settings().DEBUG,
     )
-    try:
-        yield client
-    finally:
-        client.close()
+
+    for exc in BINANCE_EXCEPTIONS:
+        app.exception_handler(exc)(binance_exception_handler)
+
+    return app
+
+
+app = set_app()
 
 
 @app.post('/webhook', status_code=status.HTTP_201_CREATED)
@@ -78,5 +50,4 @@ async def create_order(
     if response:
         return {"status": 'OK'}
 
-    raise HTTPException(
-        status.HTTP_500_INTERNAL_SERVER_ERROR, "Order failed")
+    raise HTTPException(500, "Order failed")
