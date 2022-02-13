@@ -1,6 +1,21 @@
 version: "3.7"
 
 services:
+  traefik:
+    image: traefik:latest
+    command:
+      - "--log.level=INFO"
+      - "--api.insecure=true"
+      - "--providers.docker=true"
+      - "--providers.docker.exposedbydefault=false"
+      - "--entrypoints.web.address=:80"
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "8080:8080" # The Web UI (enabled by --api)
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+
   server:
     build:
       context: .
@@ -11,19 +26,19 @@ services:
       - .env
     volumes:
       - ./app:/app
-    ports:
-      - 8000:8000
     command: uvicorn main:app --host 0.0.0.0 --port 8000 --reload --log-level=debug
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.server.rule=Host(`api.localhost`)"
+      - "traefik.http.services.server.loadbalancer.server.port=8000"
 
   vault:
     image: vault:latest
     container_name: vault
     volumes:
-      - ./vault/config:/vault/config
-      - ./vault/policies:/vault/policies
-      - ./vault/data:/vault/data
-    ports:
-      - 8200:8200
+      - ./vault/:/vault/
+    expose:
+      - "8200"
     environment:
       - VAULT_ADDR=http://0.0.0.0:8200
       - VAULT_API_ADDR=http://0.0.0.0:8200
@@ -31,3 +46,7 @@ services:
     cap_add:
       - IPC_LOCK
     command: vault server -config=/vault/config/vault.json
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.vault.rule=Host(`vault.localhost`)"
+      - "traefik.http.services.vault.loadbalancer.server.port=8200"
