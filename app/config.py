@@ -20,12 +20,12 @@ def get_settings():
     if not client.is_authenticated():
         raise Exception
 
-    data = client.secrets.kv.v1.read_secret(
+    binance_data = client.secrets.kv.v1.read_secret(
         path='BINANCE',
         mount_point='kv',
     )
 
     return Settings(
-        API_KEY=data['data']['API_KEY'],
-        SECRET_KEY=data['data']['API_KEY'],
+        API_KEY=binance_data['data']['API_KEY'],
+        SECRET_KEY=binance_data['data']['API_SECRET'],
     )
