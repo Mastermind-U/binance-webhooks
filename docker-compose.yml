@@ -20,7 +20,7 @@ services:
       - --entrypoints.web.http.redirections.entryPoint.scheme=https
       - --entrypoints.web.http.redirections.entrypoint.permanent=true
       - --certificatesresolvers.analytics-resolver.acme.tlschallenge=true
-      - --certificatesresolvers.analytics-resolver.acme.email=example@example.com
+      - --certificatesresolvers.analytics-resolver.acme.email=rex49513@gmail.com
       - --certificatesresolvers.analytics-resolver.acme.storage=/letsencrypt/acme.json
     ports:
       - "80:80"
@@ -44,7 +44,7 @@ services:
     labels:
       - "traefik.enable=true"
       - "traefik.http.services.server.loadbalancer.server.port=8000"
-      - "traefik.http.routers.server.rule=Host(`example.com`)"
+      - "traefik.http.routers.server.rule=Host(`api.hazeprice.com`)"
       - "traefik.http.routers.server.entrypoints=websecure"
       - "traefik.http.routers.server.tls.certresolver=analytics-resolver"
 
@@ -63,4 +63,13 @@ services:
       - VAULT_ADDRESS=http://0.0.0.0:8200
     cap_add:
       - IPC_LOCK
+    expose:
+      - 8200
     command: vault server -config=/vault/config/vault.json
+
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.services.vault.loadbalancer.server.port=8000"
+      - "traefik.http.routers.vault.rule=Host(`vault.hazeprice.com`)"
+      - "traefik.http.routers.vault.entrypoints=websecure"
+      - "traefik.http.routers.vault.tls.certresolver=analytics-resolver"
