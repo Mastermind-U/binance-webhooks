@@ -47,11 +47,14 @@ async def create_order(
     acc = await binance.get_account()
     symbol = await binance.get_symbol_ticker(symbol=data.ticker)
 
-    wallet = {balance['asset']: balance["free"] for balance in acc['balances']}
+    wallet = {
+        balance['asset']: float(balance["free"])
+        for balance in acc['balances']
+    }
     avaliable_usdt = wallet['USDT']
 
     if side == "BUY":
-        qty = symbol["price"] * avaliable_usdt
+        qty = float(symbol["price"]) * avaliable_usdt
     elif side == "SELL":
         qty = wallet[data.ticker]  # avaliable currency
     else:
