@@ -66,7 +66,7 @@ async def create_order(
     if side == "BUY":
         qty = avaliable_usdt / unit_price * fee
     elif side == "SELL":
-        qty = wallet[data.ticker]  # avaliable currency
+        qty = wallet[data.ticker.replace('USDT', '')]  # avaliable currency
     else:
         HTTPException(400, "Action miss")
 
