@@ -7,6 +7,7 @@ from exception_handlers import BINANCE_EXCEPTIONS, binance_exception_handler
 from fastapi import Depends, FastAPI, HTTPException, status
 from loguru import logger
 from models import WebhookData
+from utils import get_spot_balance
 
 logger.add("logs/main.log", level='DEBUG')
 
@@ -41,13 +42,18 @@ async def create_order(
         )
 
     side = data.strategy.order_action.upper()
-    quantity = data.strategy.order_contracts
+    # quantity = data.strategy.order_contracts
 
-    response = await binance.create_order(
+    available_usd, _ = await get_spot_balance(binance)
+    price = await binance.get_symbol_ticker(symbol=data.ticker)
+
+    buy_quantity = round(available_usd / float(price['price']))
+
+    response = await binance.create_test_order(
         symbol=data.ticker,
         side=side,
         type=enums.ORDER_TYPE_MARKET,
-        quantity=quantity,
+        quantity=buy_quantity,
     )
     logger.info({'data': data.dict(), 'result': response})
     if response:
