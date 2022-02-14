@@ -63,7 +63,7 @@ async def create_order(
         if (fee := float(balance["free"]))
     }
     avaliable_usdt = wallet['USDT']
-    unit_price = float(symbol["price"])
+    unit_price = float(symbol["price"]) * 0.9995
     precision = int(round(-math.log(step_size, 10), 0))
 
     if side == "BUY":
