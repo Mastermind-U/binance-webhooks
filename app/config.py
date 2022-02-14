@@ -7,6 +7,7 @@ from binance.client import AsyncClient
 from fastapi import Depends
 from hvac import Client
 from pydantic import BaseSettings
+from loguru import logger
 
 
 class Settings(BaseSettings):
@@ -24,7 +25,10 @@ def get_settings():
         token=os.environ['VAULT_ROOT_TOKEN'],
     )
 
+    logger.warning('Vault sealed')
+
     if client.sys.is_sealed():
+        logger.warning('unsealing vault')
         client.sys.submit_unseal_key(os.environ["VAULT_KEY"])
 
     if not client.is_authenticated():
