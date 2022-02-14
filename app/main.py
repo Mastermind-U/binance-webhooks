@@ -82,9 +82,9 @@ async def create_order(
         "precision": precision,
         "wallet": wallet,
     })
-    response = await binance.create_test_order(
-        symbol=data.ticker, # BTCUSD
-        side=side,  # buy
+    response = await binance.create_order(
+        symbol=data.ticker,
+        side=side,
         type=enums.ORDER_TYPE_MARKET,
         quantity=qty,
     )
