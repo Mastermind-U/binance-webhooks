@@ -6,6 +6,7 @@ from config import Settings, get_binance_client, get_settings
 from exception_handlers import BINANCE_EXCEPTIONS, binance_exception_handler
 from fastapi import Depends, FastAPI, HTTPException, status
 from models import WebhookData
+from loguru import logger
 
 
 def set_app():
@@ -46,7 +47,7 @@ async def create_order(
         type=enums.ORDER_TYPE_MARKET,
         quantity=quantity,
     )
-
+    logger.info({'data': data.dict(), 'result': response})
     if response:
         return {"status": 'OK'}
 
