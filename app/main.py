@@ -62,7 +62,7 @@ async def create_order(
     else:
         HTTPException(400, "Action miss")
 
-    qty = round(qty, 8)
+    qty = round(qty, 7)
 
     logger.info({
         "qty": qty,
