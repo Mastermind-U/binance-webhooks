@@ -9,7 +9,7 @@ from exception_handlers import BINANCE_EXCEPTIONS, binance_exception_handler
 from fastapi import Depends, FastAPI, HTTPException, status
 from loguru import logger
 from models import WebhookData
-from utils import get_step_size
+from utils import get_step_size, get_wallet
 
 logger.add("logs/main.log", level='DEBUG')
 
@@ -55,10 +55,7 @@ async def create_order(
     sell_fee = (100 - float(comissions[0]['makerCommission'])) / 100
     side = data.strategy.order_action.upper()
     unit_price = float(symbol["price"])
-    wallet = {
-        balance['asset']: avaliable_val for balance in acc['balances']
-        if (avaliable_val := float(balance["free"]))
-    }
+    wallet = get_wallet(acc)
     avaliable_usdt = wallet['USDT']
 
     precision = int(round(-math.log(step_size, 10), 0))
@@ -78,6 +75,8 @@ async def create_order(
         "unit_price": unit_price,
         "precision": precision,
         "step_size": step_size,
+        "buy_fee": buy_fee,
+        "sell_fee": sell_fee,
         "wallet": wallet,
     })
 

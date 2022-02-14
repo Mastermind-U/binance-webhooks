@@ -29,7 +29,7 @@ async def get_spot_balance(client: AsyncClient) -> tuple[float, float]:
     return own_usd, sum_btc
 
 
-def get_step_size(info):
+def get_step_size(info) -> float:
     """Get step from info."""
     step_size = None
     for flt in info['filters']:
@@ -39,3 +39,11 @@ def get_step_size(info):
     if not step_size:
         raise HTTPException(500, "Step failed")
     return step_size
+
+
+def get_wallet(account) -> dict:
+    """Get account balances as dict."""
+    return {
+        balance['asset']: avaliable_val for balance in account['balances']
+        if (avaliable_val := float(balance["free"]))
+    }
