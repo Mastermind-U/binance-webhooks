@@ -55,9 +55,7 @@ services:
     image: vault:latest
     container_name: vault
     volumes:
-      - ./vault/config:/vault/config
-      - ./vault/policies:/vault/policies
-      - ./vault/data:/vault/data
+      - ./vault/:/vault/
     ports:
       - 8200:8200
     environment:
