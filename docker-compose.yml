@@ -72,7 +72,7 @@ services:
 
     labels:
       - "traefik.enable=true"
-      - "traefik.http.services.vault.loadbalancer.server.port=8000"
+      - "traefik.http.services.vault.loadbalancer.server.port=8200"
       - "traefik.http.routers.vault.rule=Host(`vault.hazeprice.com`)"
       - "traefik.http.routers.vault.entrypoints=websecure"
       - "traefik.http.routers.vault.tls.certresolver=analytics-resolver"
