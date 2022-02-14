@@ -1,5 +1,7 @@
 from binance.client import AsyncClient
 from fastapi import HTTPException
+from decimal import ROUND_FLOOR, Decimal, getcontext
+from models import WebhookData
 
 
 async def get_spot_balance(client: AsyncClient) -> tuple[float, float]:
@@ -47,3 +49,37 @@ def get_wallet(account) -> dict:
         balance['asset']: avaliable_val for balance in account['balances']
         if (avaliable_val := float(balance["free"]))
     }
+
+
+def get_quantity(
+    side: str,  avaliable_usdt: float,
+    unit_price: float,  precision: int,
+    buy_fee: float, sell_fee: float,
+    wallet: dict, data: WebhookData,
+) -> float:
+    """Compute quantity for order.
+
+    Args:
+        side (str): action buy or sell
+        avaliable_usdt (float): balance
+        unit_price (float): price in usdt for 1 unit
+        precision (int): number of numbers
+        buy_fee (float): fee market
+        sell_fee (float): fee market
+        wallet (dict): wallet dict
+        data (WebhookData): data
+
+    Returns:
+        float: unit quantity
+    """
+    if side == "BUY":
+        qty = avaliable_usdt / unit_price * buy_fee
+        qty = round(qty, precision)
+    elif side == "SELL":
+        getcontext().rounding = ROUND_FLOOR
+        qty = wallet[data.ticker.replace('USDT', '')] * sell_fee
+        qty = round(Decimal(qty), precision)
+    else:
+        HTTPException(400, "Action miss")
+
+    return qty

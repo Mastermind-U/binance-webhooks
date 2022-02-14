@@ -1,7 +1,6 @@
 """Main app file."""
 
 import math
-from decimal import ROUND_FLOOR, Decimal, getcontext
 
 from binance import enums
 from binance.client import AsyncClient
@@ -10,7 +9,7 @@ from exception_handlers import BINANCE_EXCEPTIONS, binance_exception_handler
 from fastapi import Depends, FastAPI, HTTPException, status
 from loguru import logger
 from models import WebhookData
-from utils import get_step_size, get_wallet
+from utils import get_step_size, get_wallet, get_quantity
 
 logger.add("logs/main.log", level='DEBUG')
 
@@ -58,18 +57,11 @@ async def create_order(
     unit_price = float(symbol["price"])
     wallet = get_wallet(acc)
     avaliable_usdt = wallet['USDT']
-
     precision = int(round(-math.log(step_size, 10), 0))
-
-    if side == "BUY":
-        qty = avaliable_usdt / unit_price * buy_fee
-        qty = round(qty, precision)
-    elif side == "SELL":
-        getcontext().rounding = ROUND_FLOOR
-        qty = wallet[data.ticker.replace('USDT', '')] * sell_fee
-        qty = round(Decimal(qty), precision)
-    else:
-        HTTPException(400, "Action miss")
+    qty = get_quantity(
+        side, avaliable_usdt, unit_price, precision,
+        buy_fee, sell_fee, wallet, data,
+    )
 
     logger.info({
         "qty": qty,
