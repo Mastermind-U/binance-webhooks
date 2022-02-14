@@ -1,6 +1,7 @@
 """Main app file."""
 
 import math
+from decimal import ROUND_FLOOR, Decimal, getcontext
 
 from binance import enums
 from binance.client import AsyncClient
@@ -62,12 +63,13 @@ async def create_order(
 
     if side == "BUY":
         qty = avaliable_usdt / unit_price * buy_fee
+        qty = round(qty, precision)
     elif side == "SELL":
+        getcontext().rounding = ROUND_FLOOR
         qty = wallet[data.ticker.replace('USDT', '')] * sell_fee
+        qty = round(Decimal(qty), precision)
     else:
         HTTPException(400, "Action miss")
-
-    qty = round(qty, precision)
 
     logger.info({
         "qty": qty,
