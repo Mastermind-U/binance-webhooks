@@ -54,7 +54,7 @@ async def create_order(
     step_size = get_step_size(info)
     fee = (100 - float(base_fee)) / 100
     side = data.strategy.order_action.upper()
-    unit_price = float(symbol["price"]) * fee
+    unit_price = float(symbol["price"])
     wallet = {
         balance['asset']: avaliable_val for balance in acc['balances']
         if (avaliable_val := float(balance["free"]))
@@ -64,7 +64,7 @@ async def create_order(
     precision = int(round(-math.log(step_size, 10), 0))
 
     if side == "BUY":
-        qty = avaliable_usdt / unit_price
+        qty = avaliable_usdt / unit_price * fee
     elif side == "SELL":
         qty = wallet[data.ticker]  # avaliable currency
     else:
