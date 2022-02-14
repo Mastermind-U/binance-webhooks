@@ -15,7 +15,7 @@ class Bar(BaseModel):
 class Strategy(BaseModel):
     position_size: int
     order_action: str
-    order_contracts: int
+    order_contracts: float
     order_price: float
     order_id: str
     market_position: str
