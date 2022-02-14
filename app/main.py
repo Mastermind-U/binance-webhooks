@@ -48,8 +48,9 @@ async def create_order(
     symbol = await binance.get_symbol_ticker(symbol=data.ticker)
 
     wallet = {
-        balance['asset']: float(balance["free"])
+        balance['asset']: fee
         for balance in acc['balances']
+        if (fee := float(balance["free"]))
     }
     avaliable_usdt = wallet['USDT']
     unit_price = float(symbol["price"])
@@ -67,6 +68,7 @@ async def create_order(
         "qty": qty,
         "avaliable_usdt": avaliable_usdt,
         "unit_price": unit_price,
+        "wallet": wallet,
     })
     response = await binance.create_test_order(
         symbol=data.ticker,
