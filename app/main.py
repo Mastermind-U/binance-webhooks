@@ -44,7 +44,7 @@ async def create_order(
     acc = await binance.get_account()
     symbol = await binance.get_symbol_ticker(symbol=data.ticker)
     info = await binance.get_symbol_info(symbol=data.ticker)
-    comissions = await binance.get_trade_fee(symbol=symbol)
+    comissions = await binance.get_trade_fee(symbol=data.ticker)
 
     base_fee = comissions[0]['takerCommission']
     step_size = .0
