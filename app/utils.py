@@ -23,6 +23,6 @@ async def get_spot_balance(client: AsyncClient) -> tuple[float, float]:
             except Exception:
                 pass
 
-    btc_price_USD = await client.get_symbol_ticker(symbol="BTCUSDT")["price"]
-    own_usd = sum_btc * float(btc_price_USD)
+    btc_price = await client.get_symbol_ticker(symbol="BTCUSDT")
+    own_usd = sum_btc * float(btc_price["price"])
     return own_usd, sum_btc
