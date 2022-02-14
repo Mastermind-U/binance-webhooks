@@ -54,7 +54,7 @@ async def create_order(
     avaliable_usdt = wallet['USDT']
 
     if side == "BUY":
-        qty = float(symbol["price"]) * avaliable_usdt
+        qty = avaliable_usdt / float(symbol["price"])
     elif side == "SELL":
         qty = wallet[data.ticker]  # avaliable currency
     else:
