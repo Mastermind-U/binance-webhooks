@@ -77,6 +77,7 @@ async def create_order(
         "qty": qty,
         "avaliable_usdt": avaliable_usdt,
         "unit_price": unit_price,
+        "precision": precision,
         "wallet": wallet,
     })
     response = await binance.create_test_order(
