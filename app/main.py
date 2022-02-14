@@ -52,9 +52,10 @@ async def create_order(
         for balance in acc['balances']
     }
     avaliable_usdt = wallet['USDT']
+    unit_price = float(symbol["price"])
 
     if side == "BUY":
-        qty = avaliable_usdt / float(symbol["price"])
+        qty = avaliable_usdt / unit_price
     elif side == "SELL":
         qty = wallet[data.ticker]  # avaliable currency
     else:
@@ -62,7 +63,11 @@ async def create_order(
 
     qty = round(qty, 8)
 
-    logger.info((wallet, qty))
+    logger.info({
+        "qty": qty,
+        "avaliable_usdt": avaliable_usdt,
+        "unit_price": unit_price,
+    })
     response = await binance.create_test_order(
         symbol=data.ticker,
         side=side,
