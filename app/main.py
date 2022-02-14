@@ -66,9 +66,8 @@ async def create_order(
         qty = round(qty, precision)
     elif side == "SELL":
         getcontext().rounding = ROUND_FLOOR
-        getcontext().prec = precision
         qty = wallet[data.ticker.replace('USDT', '')] * sell_fee
-        qty = Decimal(qty)
+        qty = round(Decimal(qty), precision)
     else:
         HTTPException(400, "Action miss")
 
