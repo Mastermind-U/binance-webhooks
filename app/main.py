@@ -1,5 +1,7 @@
 """Main app file."""
 
+import math
+
 from binance import enums
 from binance.client import AsyncClient
 from config import Settings, get_binance_client, get_settings
@@ -7,7 +9,7 @@ from exception_handlers import BINANCE_EXCEPTIONS, binance_exception_handler
 from fastapi import Depends, FastAPI, HTTPException, status
 from loguru import logger
 from models import WebhookData
-import math
+from utils import get_step_size
 
 logger.add("logs/main.log", level='DEBUG')
 
@@ -49,23 +51,17 @@ async def create_order(
     logger.info(comissions)
 
     base_fee = comissions[0]['takerCommission']
-    step_size = .0
+    step_size = get_step_size(info)
     fee = (100 - float(base_fee)) / 100
     side = data.strategy.order_action.upper()
     unit_price = float(symbol["price"]) * fee
-    precision = int(round(-math.log(step_size, 10), 0))
     wallet = {
         balance['asset']: avaliable_val for balance in acc['balances']
         if (avaliable_val := float(balance["free"]))
     }
     avaliable_usdt = wallet['USDT']
 
-    for flt in info['filters']:
-        if flt['filterType'] == "LOT_SIZE":
-            step_size = float(flt['stepSize'])
-
-    if not step_size:
-        raise HTTPException(500, "Step failed")
+    precision = int(round(-math.log(step_size, 10), 0))
 
     if side == "BUY":
         qty = avaliable_usdt / unit_price
@@ -81,6 +77,7 @@ async def create_order(
         "avaliable_usdt": avaliable_usdt,
         "unit_price": unit_price,
         "precision": precision,
+        "step_size": step_size,
         "wallet": wallet,
     })
 
