@@ -7,7 +7,7 @@ from exception_handlers import BINANCE_EXCEPTIONS, binance_exception_handler
 from fastapi import Depends, FastAPI, HTTPException, status
 from loguru import logger
 from models import WebhookData
-from utils import get_spot_balance
+import math
 
 logger.add("logs/main.log", level='DEBUG')
 
@@ -46,6 +46,14 @@ async def create_order(
 
     acc = await binance.get_account()
     symbol = await binance.get_symbol_ticker(symbol=data.ticker)
+    info = await binance.get_symbol_info(symbol=data.ticker)
+
+    for flt in info['filters']:
+        if flt['filterType'] == "LOT_SIZE":
+            step_size = flt['stepSize']
+
+    if not step_size:
+        raise HTTPException(500, "Step failed")
 
     wallet = {
         balance['asset']: fee
@@ -54,6 +62,7 @@ async def create_order(
     }
     avaliable_usdt = wallet['USDT']
     unit_price = float(symbol["price"])
+    precision = int(round(-math.log(step_size, 10), 0))
 
     if side == "BUY":
         qty = avaliable_usdt / unit_price
@@ -62,7 +71,7 @@ async def create_order(
     else:
         HTTPException(400, "Action miss")
 
-    qty = round(qty, 7)
+    qty = round(qty, precision)
 
     logger.info({
         "qty": qty,
@@ -71,8 +80,8 @@ async def create_order(
         "wallet": wallet,
     })
     response = await binance.create_test_order(
-        symbol=data.ticker,
-        side=side,
+        symbol=data.ticker, # BTCUSD
+        side=side,  # buy
         type=enums.ORDER_TYPE_MARKET,
         quantity=qty,
     )
