@@ -44,20 +44,27 @@ async def create_order(
     side = data.strategy.order_action.upper()
     # quantity = data.strategy.order_contracts
 
-    available_usd, avaliable_btc = await get_spot_balance(binance)
-    price = await binance.get_symbol_ticker(symbol=data.ticker)
+    acc = await binance.get_account()
+    symbol = await binance.get_symbol_ticker(symbol=data.ticker)
 
-    info = await binance.get_symbol_info(symbol=data.ticker)
-    buy_quantity = round(
-        available_usd / float(price['price']), info['quotePrecision'])
+    wallet = {balance['asset']: balance["free"] for balance in acc['balances']}
+    avaliable_usdt = wallet['USDT']
 
-    logger.info((available_usd, avaliable_btc, price, buy_quantity))
+    if side == "BUY":
+        qty = symbol["price"] * avaliable_usdt
+    elif side == "SELL":
+        qty = wallet[data.ticker]  # avaliable currency
+    else:
+        HTTPException(400, "Action miss")
 
+    qty = round(qty, 8)
+
+    logger.info((wallet, qty))
     response = await binance.create_test_order(
         symbol=data.ticker,
         side=side,
         type=enums.ORDER_TYPE_MARKET,
-        quantity=buy_quantity,
+        quantity=qty,
     )
     logger.info({'data': data.dict(), 'result': response})
     if response:
