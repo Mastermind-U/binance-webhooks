@@ -41,14 +41,22 @@ async def create_order(
             status_code=status.HTTP_401_UNAUTHORIZED,
         )
 
-    side = data.strategy.order_action.upper()
-    # quantity = data.strategy.order_contracts
-
     acc = await binance.get_account()
     symbol = await binance.get_symbol_ticker(symbol=data.ticker)
     info = await binance.get_symbol_info(symbol=data.ticker)
+    comissions = await binance.get_trade_fee(symbol=symbol)
 
+    base_fee = comissions[0]['takerCommission']
     step_size = .0
+    fee = (100 - float(base_fee)) / 100
+    side = data.strategy.order_action.upper()
+    unit_price = float(symbol["price"]) * fee
+    precision = int(round(-math.log(step_size, 10), 0))
+    wallet = {
+        balance['asset']: avaliable_val for balance in acc['balances']
+        if (avaliable_val := float(balance["free"]))
+    }
+    avaliable_usdt = wallet['USDT']
 
     for flt in info['filters']:
         if flt['filterType'] == "LOT_SIZE":
@@ -56,15 +64,6 @@ async def create_order(
 
     if not step_size:
         raise HTTPException(500, "Step failed")
-
-    wallet = {
-        balance['asset']: fee
-        for balance in acc['balances']
-        if (fee := float(balance["free"]))
-    }
-    avaliable_usdt = wallet['USDT']
-    unit_price = float(symbol["price"]) * 0.9995
-    precision = int(round(-math.log(step_size, 10), 0))
 
     if side == "BUY":
         qty = avaliable_usdt / unit_price
@@ -82,12 +81,14 @@ async def create_order(
         "precision": precision,
         "wallet": wallet,
     })
+
     response = await binance.create_order(
         symbol=data.ticker,
         side=side,
         type=enums.ORDER_TYPE_MARKET,
         quantity=qty,
     )
+
     logger.info({'data': data.dict(), 'result': response})
     if response:
         return {"status": 'OK'}
