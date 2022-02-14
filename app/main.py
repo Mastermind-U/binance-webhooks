@@ -44,10 +44,14 @@ async def create_order(
     side = data.strategy.order_action.upper()
     # quantity = data.strategy.order_contracts
 
-    available_usd, _ = await get_spot_balance(binance)
+    available_usd, avaliable_btc = await get_spot_balance(binance)
     price = await binance.get_symbol_ticker(symbol=data.ticker)
 
-    buy_quantity = round(available_usd / float(price['price']))
+    info = await binance.get_symbol_info(symbol=data.ticker)
+    buy_quantity = round(
+        available_usd / float(price['price']), info['quotePrecision'])
+
+    logger.info((available_usd, avaliable_btc, price, buy_quantity))
 
     response = await binance.create_test_order(
         symbol=data.ticker,
