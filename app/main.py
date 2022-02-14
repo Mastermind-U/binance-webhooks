@@ -48,9 +48,11 @@ async def create_order(
     symbol = await binance.get_symbol_ticker(symbol=data.ticker)
     info = await binance.get_symbol_info(symbol=data.ticker)
 
+    step_size = .0
+
     for flt in info['filters']:
         if flt['filterType'] == "LOT_SIZE":
-            step_size = flt['stepSize']
+            step_size = float(flt['stepSize'])
 
     if not step_size:
         raise HTTPException(500, "Step failed")
