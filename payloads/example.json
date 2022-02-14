@@ -1,21 +1,22 @@
-[{
+[
+{
     "passphrase": "ad12345",
-    "time": "2022-02-14T04:50:52Z",
+    "time": "2022-02-14T08:45:16Z",
     "exchange": "BINANCE",
     "ticker": "BTCUSDT",
     "bar": {
-        "time": "2022-02-14T04:50:51Z",
-        "open": 41916.52,
-        "high": 41916.52,
-        "low": 41916.52,
-        "close": 41916.52,
-        "volume": 0.06864
+        "time": "2022-02-14T08:45:15Z",
+        "open": 42135.65,
+        "high": 42135.65,
+        "low": 42135.65,
+        "close": 42135.65,
+        "volume": 0.00306
     },
-        "strategy": {
+    "strategy": {
         "position_size": 1,
         "order_action": "buy",
         "order_contracts": 2,
-        "order_price": 41916.520000000004,
+        "order_price": 42135.65,
         "order_id": "buy",
         "market_position": "long",
         "market_position_size": 1,
@@ -25,26 +26,27 @@
 },
 {
     "passphrase": "ad12345",
-    "time": "2022-02-14T04:52:36Z",
+    "time": "2022-02-14T08:46:00Z",
     "exchange": "BINANCE",
     "ticker": "BTCUSDT",
     "bar": {
-        "time": "2022-02-14T04:52:36Z",
-        "open": 41937.25,
-        "high": 41937.25,
-        "low": 41937.25,
-        "close": 41937.25,
-        "volume": 0.01267
+        "time": "2022-02-14T08:46:00Z",
+        "open": 42123.44,
+        "high": 42123.44,
+        "low": 42123.44,
+        "close": 42123.44,
+        "volume": 0.00047
     },
     "strategy": {
         "position_size": -1,
         "order_action": "sell",
         "order_contracts": 2,
-        "order_price": 41937.25,
+        "order_price": 42123.44,
         "order_id": "sell",
         "market_position": "short",
         "market_position_size": 1,
         "prev_market_position": "long",
         "prev_market_position_size": 1
     }
-}]
+}
+]
