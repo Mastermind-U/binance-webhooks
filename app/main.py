@@ -9,7 +9,7 @@ from exception_handlers import BINANCE_EXCEPTIONS, binance_exception_handler
 from fastapi import Depends, FastAPI, HTTPException, status
 from loguru import logger
 from models import WebhookData
-from utils import get_step_size, get_wallet, get_quantity
+from utils import get_quantity, get_step_size, get_wallet
 
 logger.add("logs/main.log", level='DEBUG')
 

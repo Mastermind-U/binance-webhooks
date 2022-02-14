@@ -1,6 +1,7 @@
+from decimal import ROUND_FLOOR, Decimal, getcontext
+
 from binance.client import AsyncClient
 from fastapi import HTTPException
-from decimal import ROUND_FLOOR, Decimal, getcontext
 from models import WebhookData
 
 
