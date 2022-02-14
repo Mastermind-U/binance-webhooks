@@ -6,8 +6,8 @@ from functools import lru_cache
 from binance.client import AsyncClient
 from fastapi import Depends
 from hvac import Client
-from pydantic import BaseSettings
 from loguru import logger
+from pydantic import BaseSettings
 
 
 class Settings(BaseSettings):

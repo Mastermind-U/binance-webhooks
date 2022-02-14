@@ -5,8 +5,10 @@ from binance.client import AsyncClient
 from config import Settings, get_binance_client, get_settings
 from exception_handlers import BINANCE_EXCEPTIONS, binance_exception_handler
 from fastapi import Depends, FastAPI, HTTPException, status
-from models import WebhookData
 from loguru import logger
+from models import WebhookData
+
+logger.add("logs/main.log", level='DEBUG')
 
 
 def set_app():
