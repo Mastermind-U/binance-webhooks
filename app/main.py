@@ -50,9 +50,9 @@ async def create_order(
 
     logger.info(comissions)
 
-    base_fee = comissions[0]['takerCommission']
     step_size = get_step_size(info)
-    fee = (100 - float(base_fee)) / 100
+    buy_fee = (100 - float(comissions[0]['takerCommission'])) / 100
+    sell_fee = (100 - float(comissions[0]['makerCommission'])) / 100
     side = data.strategy.order_action.upper()
     unit_price = float(symbol["price"])
     wallet = {
@@ -64,9 +64,9 @@ async def create_order(
     precision = int(round(-math.log(step_size, 10), 0))
 
     if side == "BUY":
-        qty = avaliable_usdt / unit_price * fee
+        qty = avaliable_usdt / unit_price * buy_fee
     elif side == "SELL":
-        qty = wallet[data.ticker.replace('USDT', '')]  # avaliable currency
+        qty = wallet[data.ticker.replace('USDT', '')] * sell_fee
     else:
         HTTPException(400, "Action miss")
 
