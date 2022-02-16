@@ -1,5 +1,6 @@
 """Main app file."""
 
+import asyncio
 import math
 
 from binance import enums
@@ -42,11 +43,12 @@ async def create_order(
             detail="Invalid passphrase",
             status_code=status.HTTP_401_UNAUTHORIZED,
         )
-
-    acc = await binance.get_account()
-    symbol = await binance.get_symbol_ticker(symbol=data.ticker)
-    info = await binance.get_symbol_info(symbol=data.ticker)
-    comissions = await binance.get_trade_fee(symbol=data.ticker)
+    acc, symbol, info, comissions = asyncio.gather(
+        binance.get_account(),
+        binance.get_symbol_ticker(symbol=data.ticker),
+        binance.get_symbol_info(symbol=data.ticker),
+        binance.get_trade_fee(symbol=data.ticker),
+    )
 
     logger.info(comissions)
 
