@@ -38,14 +38,3 @@ def get_settings():
         SECRET_KEY=binance_data['API_SECRET'],
         PASSPHRASE=binance_data['PASSPHRASE'],
     )
-
-
-@lru_cache
-def get_binance_client():
-    """Get binance client via dependency."""
-    settings = get_settings()
-    logger.info("creating binance client")
-    return AsyncClient(
-        api_key=settings.API_KEY,
-        api_secret=settings.SECRET_KEY,
-    )
