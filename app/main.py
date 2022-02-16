@@ -3,6 +3,7 @@
 import asyncio
 import math
 from decimal import ROUND_FLOOR, Decimal, getcontext
+import time
 
 import simplejson as json
 from binance import enums
@@ -45,17 +46,16 @@ async def create_order(
     if data.passphrase != settings.PASSPHRASE:
         raise HTTPException(
             detail="Invalid passphrase",
-            status_code=status.HTTP_401_UNAUTHORIZED,
+            status_code=401,
         )
-
+    start_time = time.time()
     acc, symbol, info, comissions = await asyncio.gather(
         binance.get_account(),
         binance.get_symbol_ticker(symbol=data.ticker),
         binance.get_symbol_info(symbol=data.ticker),
         binance.get_trade_fee(symbol=data.ticker),
     )
-
-    logger.info(comissions)
+    logger.info("%s req time" % (time.time() - start_time))
 
     # TODO: Remove test wallet
     wallet = get_wallet(acc)
@@ -71,25 +71,27 @@ async def create_order(
         buy_fee, sell_fee, wallet, data,
     )
 
-    logger.info(json.dumps({
-        "action": action,
-        "qty": qty,
-        "avaliable_usdt": avaliable_usdt,
-        "unit_price": unit_price,
-        "precision": precision,
-        "step_size": step_size,
-        "buy_fee": buy_fee,
-        "sell_fee": sell_fee,
-        "wallet": wallet,
-        # "data": json.loads(data.json()),
-    }, indent=4))
-
-    response = await binance.create_order(
-        symbol=data.ticker,
-        side=action,
-        type=enums.ORDER_TYPE_MARKET,
-        quantity=qty,
-    )
+    try:
+        response = await binance.create_test_order(
+            symbol=data.ticker,
+            side=action,
+            type=enums.ORDER_TYPE_MARKET,
+            quantity=qty,
+        )
+    finally:
+        logger.info(json.dumps({
+            "action": action,
+            "qty": qty,
+            "avaliable_usdt": avaliable_usdt,
+            "unit_price": unit_price,
+            "precision": precision,
+            "step_size": step_size,
+            "buy_fee": buy_fee,
+            "sell_fee": sell_fee,
+            "wallet": wallet,
+            "comissions": comissions,
+            # "data": json.loads(data.json()),
+        }, indent=4))
 
     logger.info({'result': response})
     if response:
