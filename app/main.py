@@ -4,6 +4,7 @@ import asyncio
 import json
 import math
 import time
+from datetime import datetime
 from decimal import ROUND_FLOOR, Decimal, getcontext
 
 from binance.client import AsyncClient
@@ -102,7 +103,7 @@ async def create_order(
         )
     finally:
         logger.info(json.dumps(jsonable_encoder({
-            "start_time": start_time,
+            "start_time": datetime.fromtimestamp(start_time),
             "action": action,
             "qty": qty,
             "avaliable_usdt": avaliable_usdt,
