@@ -12,6 +12,7 @@ fastapi = "^0.73.0"
 uvicorn = "^0.17.4"
 hvac = "^0.11.2"
 loguru = "^0.6.0"
+simplejson = "^3.17.6"
 
 [tool.poetry.dev-dependencies]
 mypy = "^0.931"
