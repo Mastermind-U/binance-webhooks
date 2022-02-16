@@ -41,13 +41,11 @@ def get_settings():
     )
 
 
-async def get_binance_client(settings: Settings = Depends(get_settings)):
+@lru_cache
+def get_binance_client(settings: Settings = Depends(get_settings)):
     """Get binance client via dependency."""
-    client = await AsyncClient.create(
+    logger.info("creating binance client")
+    return AsyncClient(
         api_key=settings.API_KEY,
         api_secret=settings.SECRET_KEY,
     )
-    try:
-        yield client
-    finally:
-        await client.close_connection()
