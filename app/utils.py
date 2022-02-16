@@ -1,8 +1,6 @@
 from decimal import Decimal
 
-from binance.client import AsyncClient
 from fastapi import HTTPException
-from models import WebhookData
 
 
 def get_step_size(info) -> float:
