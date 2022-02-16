@@ -10,10 +10,12 @@ services:
       # - --metrics
       # - --metrics.prometheus.buckets=0.1,0.3,1.2,5.0
       - --log.level=INFO
+      # - --log.format=json
       - --providers.docker=true
       - --providers.docker.exposedbydefault=false
-      - --accesslog=true
-      - --accesslog.filepath=/var/log/traefik/access.log
+      # - --accesslog=true
+      # - --accesslog.filepath=/var/log/traefik/access.log
+      # - --accesslog.format=json
       - --entrypoints.web.address=:80
       - --entrypoints.websecure.address=:443
       - --entrypoints.web.http.redirections.entryPoint.to=websecure
@@ -40,7 +42,8 @@ services:
     container_name: app
     env_file:
       - .env
-    command: "uvicorn main:app --host 0.0.0.0 --port 8000 --log-level=info"
+    # command: "uvicorn main:app --host 0.0.0.0 --port 8000 --log-level=info"
+    command: "hypercorn main:app --bind 0.0.0.0:8000"
     volumes:
       - ./logs/:/app/logs
       - ./.keys/:/app/keys.json
