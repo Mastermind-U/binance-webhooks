@@ -12,7 +12,7 @@ from loguru import logger
 from models import WebhookData
 from utils import get_quantity, get_step_size, get_wallet
 
-logger.add("logs/main.log", level='DEBUG', rotation="00:00")
+logger.add("logs/app/main_{time:MM-DD}.log", level='DEBUG', rotation="00:00")
 
 
 def set_app():
