@@ -12,7 +12,7 @@ from loguru import logger
 from models import WebhookData
 from utils import get_quantity, get_step_size, get_wallet
 
-logger.add("logs/main.log", level='DEBUG')
+logger.add("logs/main.log", level='DEBUG', rotation="00:00")
 
 
 def set_app():
@@ -43,6 +43,7 @@ async def create_order(
             detail="Invalid passphrase",
             status_code=status.HTTP_401_UNAUTHORIZED,
         )
+
     acc, symbol, info, comissions = asyncio.gather(
         binance.get_account(),
         binance.get_symbol_ticker(symbol=data.ticker),
@@ -52,38 +53,41 @@ async def create_order(
 
     logger.info(comissions)
 
+    # TODO: Remove test wallet
+    wallet = get_wallet(acc)
+    avaliable_usdt = cl - 785.0 if (cl := wallet['USDT']) > 0.01 else cl
     step_size = get_step_size(info)
     buy_fee = (100 - float(comissions[0]['takerCommission'])) / 100
     sell_fee = (100 - float(comissions[0]['makerCommission'])) / 100
-    side = data.strategy.order_action.upper()
-    unit_price = float(symbol["price"])
-    wallet = get_wallet(acc)
-    avaliable_usdt = wallet['USDT']
+    action = data.strategy.order_action.upper()
+    unit_price = float(symbol["price"])  # type: ignore
     precision = int(round(-math.log(step_size, 10), 0))
     qty = get_quantity(
-        side, avaliable_usdt, unit_price, precision,
+        action, avaliable_usdt, unit_price, precision,
         buy_fee, sell_fee, wallet, data,
     )
 
     logger.info({
+        "action": action,
         "qty": qty,
         "avaliable_usdt": avaliable_usdt,
         "unit_price": unit_price,
         "precision": precision,
         "step_size": step_size,
         "buy_fee": buy_fee,
+        "comission": comissions,
         "sell_fee": sell_fee,
         "wallet": wallet,
     })
 
     response = await binance.create_order(
         symbol=data.ticker,
-        side=side,
+        side=action,
         type=enums.ORDER_TYPE_MARKET,
         quantity=qty,
     )
 
-    logger.info({'data': data.dict(), 'result': response})
+    logger.info({'result': response})
     if response:
         return {"status": 'OK'}
 
