@@ -25,10 +25,8 @@ def get_settings():
         token=os.environ['VAULT_ROOT_TOKEN'],
     )
 
-    logger.warning('Vault sealed')
-
     if client.sys.is_sealed():
-        logger.warning('unsealing vault')
+        logger.warning('Vault sealed, unsealing...')
         client.sys.submit_unseal_key(os.environ["VAULT_KEY"])
 
     if not client.is_authenticated():
