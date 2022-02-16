@@ -29,7 +29,7 @@ def get_quantity(
     side: str,  avaliable_usdt: Decimal,
     unit_price: Decimal,  precision: int,
     buy_fee: Decimal, sell_fee: Decimal,
-    wallet: dict, data: WebhookData,
+    wallet: dict, ticker: str,
 ) -> Decimal:
     """Compute quantity for order.
 
@@ -50,7 +50,7 @@ def get_quantity(
         qty = avaliable_usdt / unit_price * buy_fee
         qty = round(qty, precision)
     elif side == "SELL":
-        qty = wallet[data.ticker.replace('USDT', '')] * sell_fee
+        qty = wallet[ticker.replace('USDT', '')] * sell_fee
         qty = round(Decimal(qty), precision)
     else:
         HTTPException(400, "Action miss")
