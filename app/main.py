@@ -7,7 +7,7 @@ from decimal import ROUND_FLOOR, Decimal, getcontext
 
 import simplejson as json
 from binance.client import AsyncClient
-from config import Settings, get_binance_client, get_settings
+from config import Settings, get_settings
 from exception_handlers import BINANCE_EXCEPTIONS, binance_exception_handler
 from fastapi import Depends, FastAPI, HTTPException, status
 from loguru import logger
@@ -35,13 +35,32 @@ def set_app():
 app = set_app()
 
 
+@app.on_event("startup")
+async def set_up_binance():
+    """Set up client as global var."""
+    logger.info("Opening binance connection")
+    settings = get_settings()
+    app.state.binance = await AsyncClient.create(
+        api_key=settings.API_KEY,
+        api_secret=settings.SECRET_KEY,
+    )
+
+
+@app.on_event("shutdown")
+async def close_binance():
+    """Set up client as global var."""
+    logger.info("Closing binance connection")
+    await app.state.binance.close_connection()
+
+
 @app.post('/webhook', status_code=status.HTTP_201_CREATED)
 async def create_order(
     data: WebhookData,
     settings: Settings = Depends(get_settings),
-    binance: AsyncClient = Depends(get_binance_client),
 ):
     """Perform odred to binance, catch tradingview webhook."""
+    binance: AsyncClient = app.state.binance
+
     if data.passphrase != settings.PASSPHRASE:
         raise HTTPException(
             detail="Invalid passphrase",
@@ -60,7 +79,8 @@ async def create_order(
 
     # TODO: Remove test wallet
     wallet = get_wallet(acc)
-    avaliable_usdt = cl - Decimal(685.0) if (cl := Decimal(wallet['USDT'])) > 0.01 else cl
+    avaliable_usdt = \
+        cl - Decimal(685.0) if (cl := Decimal(wallet['USDT'])) > 0.01 else cl
     step_size = get_step_size(info)
     buy_fee = (100 - Decimal(comissions[0]['takerCommission'])) / 100
     sell_fee = (100 - Decimal(comissions[0]['makerCommission'])) / 100
