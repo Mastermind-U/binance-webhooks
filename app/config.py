@@ -4,7 +4,6 @@ import os
 from functools import lru_cache
 
 from binance.client import AsyncClient
-from fastapi import Depends
 from hvac import Client
 from loguru import logger
 from pydantic import BaseSettings
@@ -42,8 +41,9 @@ def get_settings():
 
 
 @lru_cache
-def get_binance_client(settings: Settings = Depends(get_settings)):
+def get_binance_client():
     """Get binance client via dependency."""
+    settings = get_settings()
     logger.info("creating binance client")
     return AsyncClient(
         api_key=settings.API_KEY,
