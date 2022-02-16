@@ -1,15 +1,16 @@
 """Main app file."""
 
 import asyncio
+import json
 import math
 import time
 from decimal import ROUND_FLOOR, Decimal, getcontext
 
-import simplejson as json
 from binance.client import AsyncClient
 from config import Settings, get_settings
 from exception_handlers import BINANCE_EXCEPTIONS, binance_exception_handler
 from fastapi import Depends, FastAPI, HTTPException, status
+from fastapi.encoders import jsonable_encoder
 from loguru import logger
 from models import WebhookData
 from utils import get_quantity, get_step_size, get_wallet
@@ -100,7 +101,7 @@ async def create_order(
             quantity=qty,
         )
     finally:
-        logger.info(json.dumps({
+        logger.info(json.dumps(jsonable_encoder({
             "start_time": start_time,
             "action": action,
             "qty": qty,
@@ -113,8 +114,8 @@ async def create_order(
             "wallet": wallet,
             "comissions": comissions,
             "req_time": request_time,
-            "data": data.dict(),
-        }, indent=4))
+            "data": data,
+        }), indent=4))
 
     logger.info({'result': response})
     if response:
