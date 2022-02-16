@@ -2,7 +2,9 @@
 
 import asyncio
 import math
+from decimal import ROUND_FLOOR, Decimal, getcontext
 
+import simplejson as json
 from binance import enums
 from binance.client import AsyncClient
 from config import Settings, get_binance_client, get_settings
@@ -17,6 +19,8 @@ logger.add("logs/app/main_{time:MM-DD}.log", level='DEBUG', rotation="00:00")
 
 def set_app():
     """Create app."""
+    getcontext().rounding = ROUND_FLOOR
+
     app = FastAPI(
         name="Binance-resolver",
         debug=get_settings().DEBUG,
@@ -44,7 +48,7 @@ async def create_order(
             status_code=status.HTTP_401_UNAUTHORIZED,
         )
 
-    acc, symbol, info, comissions = asyncio.gather(
+    acc, symbol, info, comissions = await asyncio.gather(
         binance.get_account(),
         binance.get_symbol_ticker(symbol=data.ticker),
         binance.get_symbol_info(symbol=data.ticker),
@@ -55,19 +59,19 @@ async def create_order(
 
     # TODO: Remove test wallet
     wallet = get_wallet(acc)
-    avaliable_usdt = cl - 785.0 if (cl := wallet['USDT']) > 0.01 else cl
+    avaliable_usdt = cl - Decimal(685.0) if (cl := Decimal(wallet['USDT'])) > 0.01 else cl
     step_size = get_step_size(info)
-    buy_fee = (100 - float(comissions[0]['takerCommission'])) / 100
-    sell_fee = (100 - float(comissions[0]['makerCommission'])) / 100
+    buy_fee = (100 - Decimal(comissions[0]['takerCommission'])) / 100
+    sell_fee = (100 - Decimal(comissions[0]['makerCommission'])) / 100
     action = data.strategy.order_action.upper()
-    unit_price = float(symbol["price"])  # type: ignore
+    unit_price = Decimal(symbol["price"])  # type: ignore
     precision = int(round(-math.log(step_size, 10), 0))
     qty = get_quantity(
         action, avaliable_usdt, unit_price, precision,
         buy_fee, sell_fee, wallet, data,
     )
 
-    logger.info({
+    logger.info(json.dumps({
         "action": action,
         "qty": qty,
         "avaliable_usdt": avaliable_usdt,
@@ -75,10 +79,10 @@ async def create_order(
         "precision": precision,
         "step_size": step_size,
         "buy_fee": buy_fee,
-        "comission": comissions,
         "sell_fee": sell_fee,
         "wallet": wallet,
-    })
+        # "data": json.loads(data.json()),
+    }, indent=4))
 
     response = await binance.create_order(
         symbol=data.ticker,

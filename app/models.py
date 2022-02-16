@@ -1,22 +1,23 @@
 from datetime import datetime
+from decimal import Decimal
 
 from pydantic import BaseModel
 
 
 class Bar(BaseModel):
     time: datetime
-    open: float
-    high: float
-    low: float
-    close: float
-    volume: int
+    open: Decimal
+    high: Decimal
+    low: Decimal
+    close: Decimal
+    volume: Decimal
 
 
 class Strategy(BaseModel):
     position_size: int
     order_action: str
-    order_contracts: float
-    order_price: float
+    order_contracts: Decimal
+    order_price: Decimal
     order_id: str
     market_position: str
     market_position_size: int
