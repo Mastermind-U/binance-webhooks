@@ -48,30 +48,31 @@ async def create_order(
             detail="Invalid passphrase",
             status_code=401,
         )
+
+    ticker = data.ticker
     start_time = time.time()
     acc, symbol, info, comissions = await asyncio.gather(
         binance.get_account(),
-        binance.get_symbol_ticker(symbol=data.ticker),
-        binance.get_symbol_info(symbol=data.ticker),
-        binance.get_trade_fee(symbol=data.ticker),
+        binance.get_symbol_ticker(symbol=ticker),
+        binance.get_symbol_info(symbol=ticker),
+        binance.get_trade_fee(symbol=ticker),
     )
-    logger.info("%s req time" % (time.time() - start_time))
+    request_time = time.time() - start_time
 
-    start_time = time.time()
     # TODO: Remove test wallet
     wallet = get_wallet(acc)
     avaliable_usdt = cl - Decimal(685.0) if (cl := Decimal(wallet['USDT'])) > 0.01 else cl
     step_size = get_step_size(info)
     buy_fee = (100 - Decimal(comissions[0]['takerCommission'])) / 100
     sell_fee = (100 - Decimal(comissions[0]['makerCommission'])) / 100
-    action = data.strategy.order_action.upper()
+    action = data.order_action.upper()
     unit_price = Decimal(symbol["price"])  # type: ignore
     precision = int(round(-math.log(step_size, 10), 0))
     qty = get_quantity(
         action, avaliable_usdt, unit_price, precision,
-        buy_fee, sell_fee, wallet, data,
+        buy_fee, sell_fee, wallet, ticker,
     )
-    logger.info("%s count time" % (time.time() - start_time))
+
     try:
         response = await binance.create_test_order(
             symbol=data.ticker,
@@ -81,6 +82,7 @@ async def create_order(
         )
     finally:
         logger.info(json.dumps({
+            "start_time": start_time,
             "action": action,
             "qty": qty,
             "avaliable_usdt": avaliable_usdt,
@@ -91,7 +93,8 @@ async def create_order(
             "sell_fee": sell_fee,
             "wallet": wallet,
             "comissions": comissions,
-            # "data": json.loads(data.json()),
+            "req_time": request_time,
+            "data": data.dict(),
         }, indent=4))
 
     logger.info({'result': response})
