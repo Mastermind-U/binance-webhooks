@@ -57,6 +57,7 @@ async def create_order(
     )
     logger.info("%s req time" % (time.time() - start_time))
 
+    start_time = time.time()
     # TODO: Remove test wallet
     wallet = get_wallet(acc)
     avaliable_usdt = cl - Decimal(685.0) if (cl := Decimal(wallet['USDT'])) > 0.01 else cl
@@ -70,7 +71,7 @@ async def create_order(
         action, avaliable_usdt, unit_price, precision,
         buy_fee, sell_fee, wallet, data,
     )
-
+    logger.info("%s count time" % (time.time() - start_time))
     try:
         response = await binance.create_test_order(
             symbol=data.ticker,
