@@ -2,11 +2,10 @@
 
 import asyncio
 import math
-from decimal import ROUND_FLOOR, Decimal, getcontext
 import time
+from decimal import ROUND_FLOOR, Decimal, getcontext
 
 import simplejson as json
-from binance import enums
 from binance.client import AsyncClient
 from config import Settings, get_binance_client, get_settings
 from exception_handlers import BINANCE_EXCEPTIONS, binance_exception_handler
@@ -77,7 +76,7 @@ async def create_order(
         response = await binance.create_test_order(
             symbol=data.ticker,
             side=action,
-            type=enums.ORDER_TYPE_MARKET,
+            type=binance.ORDER_TYPE_MARKET,
             quantity=qty,
         )
     finally:
