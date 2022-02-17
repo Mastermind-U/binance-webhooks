@@ -48,7 +48,7 @@ def get_quantity(
         qty = avaliable_usdt / unit_price * buy_fee
         qty = round(qty, precision)
     elif side == "SELL":
-        qty = wallet[ticker.replace('USDT', '')] * sell_fee
+        qty = wallet.get(ticker.replace('USDT', ''), Decimal(0.0)) * sell_fee
         qty = round(Decimal(qty), precision)
     else:
         HTTPException(400, "Action miss")
