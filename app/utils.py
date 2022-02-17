@@ -26,8 +26,7 @@ def get_wallet(account) -> dict:
 def get_quantity(
     side: str,  avaliable_usdt: Decimal,
     unit_price: Decimal,  precision: int,
-    buy_fee: Decimal, sell_fee: Decimal,
-    wallet: dict, ticker: str,
+    comissions: dict, wallet: dict, ticker: str,
 ) -> Decimal:
     """Compute quantity for order.
 
@@ -36,19 +35,20 @@ def get_quantity(
         avaliable_usdt (float): balance
         unit_price (float): price in usdt for 1 unit
         precision (int): number of numbers
-        buy_fee (float): fee market
-        sell_fee (float): fee market
+        fee (float): fee market
         wallet (dict): wallet dict
         data (WebhookData): data
 
     Returns:
         float: unit quantity
     """
+    fee = 1 - comissions[side]
+
     if side == "BUY":
-        qty = avaliable_usdt / unit_price * buy_fee
+        qty = avaliable_usdt / unit_price * fee
         qty = round(qty, precision)
     elif side == "SELL":
-        qty = wallet.get(ticker.replace('USDT', ''), Decimal(0.0)) * sell_fee
+        qty = wallet.get(ticker.replace('USDT', ''), Decimal(0.0)) * fee
         qty = round(Decimal(qty), precision)
     else:
         HTTPException(400, "Action miss")

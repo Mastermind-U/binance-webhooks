@@ -46,6 +46,13 @@ async def set_up_binance():
         api_key=settings.API_KEY,
         api_secret=settings.SECRET_KEY,
     )
+    fees = await app.state.binance.get_trade_fee()
+    app.state.fees = {
+        fee['symbol']: {
+            'BUY': fee['takerCommission'],
+            'SELL': fee['makerCommission'],
+        } for fee in fees
+    }
 
 
 @app.on_event("shutdown")
@@ -71,27 +78,24 @@ async def create_order(
 
     ticker = data.ticker
     start_time = time.time()
-    acc, symbol, info, comissions = await asyncio.gather(
+    acc, symbol, info = await asyncio.gather(
         binance.get_account(),
         binance.get_symbol_ticker(symbol=ticker),
         binance.get_symbol_info(symbol=ticker),
-        binance.get_trade_fee(symbol=ticker),
     )
     request_time = time.time() - start_time
 
     # TODO: Remove test wallet
+    comissions = app.state.fees
     wallet = get_wallet(acc)
-    avaliable_usdt = \
-        cl - Decimal(685.0) if (cl := Decimal(wallet['USDT'])) > 0.01 else cl
+    usdt = cl - Decimal(685.0) if (cl := wallet['USDT']) > 0.01 else cl
     step_size = get_step_size(info)
-    buy_fee = (100 - Decimal(comissions[0]['takerCommission'])) / 100
-    sell_fee = (100 - Decimal(comissions[0]['makerCommission'])) / 100
     action = data.order_action.upper()
     unit_price = Decimal(symbol["price"])  # type: ignore
     precision = int(round(-math.log(step_size, 10), 0))
     qty = get_quantity(
-        action, avaliable_usdt, unit_price, precision,
-        buy_fee, sell_fee, wallet, ticker,
+        action, usdt, unit_price, precision,
+        comissions[ticker], wallet, ticker,
     )
 
     try:
@@ -106,12 +110,10 @@ async def create_order(
             "start_time": datetime.fromtimestamp(start_time),
             "action": action,
             "qty": qty,
-            "avaliable_usdt": avaliable_usdt,
+            "avaliable_usdt": usdt,
             "unit_price": unit_price,
             "precision": precision,
             "step_size": step_size,
-            "buy_fee": buy_fee,
-            "sell_fee": sell_fee,
             "wallet": wallet,
             "comissions": comissions,
             "req_time": request_time,
