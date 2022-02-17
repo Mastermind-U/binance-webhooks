@@ -115,7 +115,6 @@ async def create_order(
             "precision": precision,
             "step_size": step_size,
             "wallet": wallet,
-            "comissions": comissions,
             "req_time": request_time,
             "data": data,
         }), indent=4))
