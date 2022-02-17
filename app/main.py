@@ -49,8 +49,8 @@ async def set_up_binance():
     fees = await app.state.binance.get_trade_fee()
     app.state.fees = {
         fee['symbol']: {
-            'BUY': fee['takerCommission'],
-            'SELL': fee['makerCommission'],
+            'BUY': Decimal(fee['takerCommission']),
+            'SELL': Decimal(fee['makerCommission']),
         } for fee in fees
     }
 
