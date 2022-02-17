@@ -58,18 +58,15 @@ services:
     image: vault:latest
     container_name: vault
     volumes:
-      - ./vault/:/vault/
-    ports:
-      - 8200:8200
+      - ./vault/config/:/vault/config/
+      - vault-data:/vault/file/
     environment:
       - VAULT_ADDR=http://0.0.0.0:8200
-      - VAULT_API_ADDR=http://0.0.0.0:8200
-      - VAULT_ADDRESS=http://0.0.0.0:8200
     cap_add:
       - IPC_LOCK
     expose:
       - 8200
-    command: vault server -config=/vault/config/vault.json
+    command: vault server -config=/vault/config/config.hcl
 
     labels:
       - "traefik.enable=true"
@@ -77,3 +74,6 @@ services:
       - "traefik.http.routers.vault.rule=Host(`vault.hazeprice.com`)"
       - "traefik.http.routers.vault.entrypoints=websecure"
       - "traefik.http.routers.vault.tls.certresolver=analytics-resolver"
+
+volumes:
+  vault-data:
