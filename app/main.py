@@ -86,7 +86,7 @@ async def create_order(
     request_time = time.time() - start_time
 
     # TODO: Remove test wallet
-    comissions = app.state.fees
+    comissions = app.state.fees[ticker]
     wallet = get_wallet(acc)
     usdt = cl - Decimal(685.0) if (cl := wallet['USDT']) > 0.01 else cl
     step_size = get_step_size(info)
@@ -95,7 +95,7 @@ async def create_order(
     precision = int(round(-math.log(step_size, 10), 0))
     qty = get_quantity(
         action, usdt, unit_price, precision,
-        comissions[ticker], wallet, ticker,
+        comissions, wallet, info['baseAsset'],
     )
 
     try:
@@ -116,6 +116,7 @@ async def create_order(
             "step_size": step_size,
             "wallet": wallet,
             "req_time": request_time,
+            "comissions": comissions,
             "data": data,
         }), indent=4))
 

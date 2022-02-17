@@ -26,7 +26,7 @@ def get_wallet(account) -> dict:
 def get_quantity(
     side: str,  avaliable_usdt: Decimal,
     unit_price: Decimal,  precision: int,
-    comissions: dict, wallet: dict, ticker: str,
+    comissions: dict, wallet: dict, cur_name: str,
 ) -> Decimal:
     """Compute quantity for order.
 
@@ -48,7 +48,7 @@ def get_quantity(
         qty = avaliable_usdt / unit_price * fee
         qty = round(qty, precision)
     elif side == "SELL":
-        qty = wallet.get(ticker.replace('USDT', ''), Decimal(0.0)) * fee
+        qty = wallet.get(cur_name, Decimal(0.0)) * fee
         qty = round(Decimal(qty), precision)
     else:
         HTTPException(400, "Action miss")
