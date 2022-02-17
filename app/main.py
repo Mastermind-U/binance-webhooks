@@ -99,7 +99,7 @@ async def create_order(
     )
 
     try:
-        response = await binance.create_test_order(
+        response = await binance.create_order(
             symbol=data.ticker,
             side=action,
             type=binance.ORDER_TYPE_MARKET,
